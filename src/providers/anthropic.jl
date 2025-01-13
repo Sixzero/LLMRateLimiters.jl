@@ -1,36 +1,31 @@
+# Anthropic-specific rate limiting implementation
+using Dates, HTTP
 
-using Dates
+"""
+    airatelimited_byprovider(args...; model::String = "claudeh", kwargs...)
 
-# Create default instance
-function create_anthropic_limiter()
-    RateLimiterTPM(
-        max_tokens = 400000,  # From anthropic-ratelimit-tokens-limit
-        time_window = 60.0,   # Assuming the limit resets every minute
-        estimation_method = CharCountDivTwo
-    )
-end
+A wrapper for `aigenerate` that automatically applies the appropriate rate limiter based on the model.
 
-const MODEL_LIMITERS = Dict{String,RateLimiterTPM}()
+# Arguments
+- `args...`: Arguments to be passed to `aigenerate`
+- `model::String`: The model to use for generation. Defaults to "claudeh".
+- `kwargs...`: Additional keyword arguments to be passed to `aigenerate`
 
-function get_rate_limiter(model::String)
-    get!(MODEL_LIMITERS, model) do
-        create_anthropic_limiter()
-    end
-end
-
-function airatelimited(args...; model::String = "claudeh", kwargs...)
-    rate_limiter = get_rate_limiter(model)
+# Returns
+- The result of `aigenerate` after applying rate limiting
+"""
+function airatelimited_byprovider(provider::Val{:anthropic}, args...; model::String = "claudeh", rate_limiter, kwargs...)
     rate_limited_aigenerate = with_rate_limiter_tpm(aigenerate, rate_limiter)
     
-    retry_on_rate_limit(; max_retries=5, verbose=1) do
+    return retry_on_rate_limit(; max_retries=5, verbose=1) do
         response = rate_limited_aigenerate(args...; model=model, kwargs...)
-        update_rate_limiter!(rate_limiter, response)
+        update_rate_limiter!(provider, rate_limiter, response)
         return response
     end
 end
 
 # Update the rate limiter based on the actual token usage
-function update_rate_limiter!(rate_limiter::RateLimiterTPM, response)
+function update_rate_limiter!(::Val{:anthropic}, rate_limiter::RateLimiterTPM, response::PromptingTools.AIMessage, )
     actual_tokens = if response.tokens isa Tuple && length(response.tokens) >= 2
         response.tokens[1] + response.tokens[2]
     elseif response.tokens isa Dict && haskey(response.tokens, 1) && haskey(response.tokens, 2)
@@ -56,4 +51,11 @@ function update_rate_limiter!(rate_limiter::RateLimiterTPM, response)
     end
 end
 
-
+# Add model to provider mapping
+const ANTHROPIC_MODELS = Set(["claude", "claudeh"])
+# Create a global RateLimiterTPM instance
+const ANTHROPIC_RATE_LIMITER = RateLimiterTPM(
+    max_tokens = 400000,  # From anthropic-ratelimit-tokens-limit
+    time_window = 60.0,   # Assuming the limit resets every minute
+    estimation_method = CharCountDivTwo
+)

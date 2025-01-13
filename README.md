@@ -3,8 +3,8 @@
 Rate limiting utilities for LLM services to prevent rate limit errors and manage API quotas. Aim is to be lightweight but useful.
 
 ## Features
-- Request per minute (RPM) limiting
-- Token per minute (TPM) limiting
+- Request per minute (RPM) limiting `RateLimiterRPM`
+- Token per minute (TPM) limiting `RateLimiterTPM`
 - Automatic rate management for Anthropic's Claude models
 - Async-safe rate limiting
 

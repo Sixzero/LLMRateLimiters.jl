@@ -46,3 +46,8 @@ function set_estimation_method!(limiter::RateLimiterTPM, method::TokenEstimation
     limiter.estimation_method = method
 end
 
+# Default method that errors for unimplemented providers
+function update_rate_limiter!(provider::Val{T}, rate_limiter::RateLimiterTPM, response) where {T}
+    throw(ArgumentError("Rate limiter update not implemented for provider: $T"))
+end
+
