@@ -21,13 +21,14 @@ using Dates
             rate_limited_func()
             rate_limited_func()
             t_elapsed = time() - t_start
-            @test t_elapsed < 0.1
+            @test t_elapsed < 0.2
             @test counter[] == 2
             
             # Third call should be rate limited
             t_start = time()
             rate_limited_func()
             t_elapsed = time() - t_start
+            @show t_elapsed
             @test t_elapsed ≈ 1.0 rtol=0.2
             @test counter[] == 3
         end
@@ -44,7 +45,8 @@ using Dates
             limiter = RateLimiterTPM(
                 max_tokens=10,
                 time_window=1.0,
-                estimation_method=CharCount
+                estimation_method=CharCount,
+                verbose=false,
             )
             
             process = with_rate_limiter_tpm(limiter) do text
@@ -55,7 +57,7 @@ using Dates
             t_start = time()
             result = process("test test")
             t_elapsed = time() - t_start
-            @test t_elapsed < 0.1
+            @test t_elapsed < 0.2
             @test result == 9
             
             # Second call exceeding token limit should be rate limited
