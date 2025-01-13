@@ -10,4 +10,5 @@ using Aqua
     include("test_rpm.jl")
     include("test_tpm.jl")
     include("test_providers.jl")
+    include("test_header_ratelimits.jl")
 end;

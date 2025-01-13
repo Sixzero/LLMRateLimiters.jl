@@ -17,6 +17,7 @@ export
     RateLimiterTPM,
     with_rate_limiter,
     with_rate_limiter_tpm,
+    retry_on_rate_limit,
     airatelimited,
     
     # Token Estimation

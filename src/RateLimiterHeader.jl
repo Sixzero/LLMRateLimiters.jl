@@ -9,7 +9,7 @@ result = retry_on_rate_limit() do
     your_existing_function(arg1, arg2)
 end
 """
-function retry_on_rate_limit(f; max_retries=5, verbose=1, base_wait_time=1.0, msg="")
+function retry_on_rate_limit(f; max_retries=5, verbose=true, base_wait_time=1.0, msg="", default_retry_after=30)
     retries = 0
     while retries < max_retries
         try
@@ -23,20 +23,20 @@ function retry_on_rate_limit(f; max_retries=5, verbose=1, base_wait_time=1.0, ms
                        get(body.error, :code, nothing) == "rate_limit_exceeded"
                        idx = findfirst(v -> first(v) == "retry-after-ms", e.response.headers)
                        retry_after = if idx === nothing
-                            @warn "There is no retry-after header. Retrying in 30 seconds."
-                            30
+                        verbose && @warn "There is no retry-after header. Retrying in $default_retry_after seconds."
+                            default_retry_after
                         else
                             Base.parse(Float64, last(e.response.headers[idx])) / 1000
                         end
-                        @warn "Rate limit exceeded. Retrying in $retry_after seconds."
+                        verbose && @warn "Rate limit exceeded. Retrying in $retry_after seconds."
                         sleep(retry_after)
                     else
-                        @warn "HTTP 429 error, but not a standard rate limit. Retrying in $base_wait_time seconds. ($e)"
+                        verbose && @warn "HTTP 429 error, but not a standard rate limit. Retrying in $base_wait_time seconds. ($e)"
                         sleep(base_wait_time)
                     end
                 elseif 500 <= status < 600  # Server errors
                     wait_time = base_wait_time * (2^retries)  # Exponential backoff
-                    @warn "Server error ($status). Retrying in $wait_time seconds."
+                    verbose && @warn "Server error ($status). Retrying in $wait_time seconds."
                     sleep(wait_time)
                 else
                     @error "Unhandled HTTP error: $(e)  "

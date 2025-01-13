@@ -34,6 +34,13 @@ using Dates
         @test last(limiter.token_usage)[2] == 150  # total tokens
     end
 
+    @testset "Unknown model" begin
+        test_input = "test message"
+        result = airatelimited(test_input; rate_limiter=nothing, model="echo")
+        @test result.content == "Hello!"
+        @test result.status == 200
+    end
+
     @testset "Fallback provider" begin
         test_input = "test message"
         result = airatelimited_byprovider(Val(:no_provider_info), test_input; rate_limiter=nothing, model="echo")
