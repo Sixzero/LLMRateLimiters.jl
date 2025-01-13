@@ -19,11 +19,12 @@ function retry_on_rate_limit(f; max_retries=5, verbose=true, base_wait_time=1.0,
                 status = e.status
                 if status == 429  # Rate limit error
                     body = JSON3.read(String(e.response.body))
-                    if get(body, :error, nothing) !== nothing && 
-                       get(body.error, :code, nothing) == "rate_limit_exceeded"
-                       idx = findfirst(v -> first(v) == "retry-after-ms", e.response.headers)
-                       retry_after = if idx === nothing
-                        verbose && @warn "There is no retry-after header. Retrying in $default_retry_after seconds."
+                    # Check if body has error field and if it's a Dict
+                    if body isa Dict && haskey(body, :error) && 
+                       body[:error] isa Dict && get(body[:error], :code, "") == "rate_limit_exceeded"
+                        idx = findfirst(v -> first(v) == "retry-after-ms", e.response.headers)
+                        retry_after = if idx === nothing
+                            verbose && @warn "There is no retry-after header. Retrying in $default_retry_after seconds."
                             default_retry_after
                         else
                             Base.parse(Float64, last(e.response.headers[idx])) / 1000
@@ -51,5 +52,3 @@ function retry_on_rate_limit(f; max_retries=5, verbose=true, base_wait_time=1.0,
     end
     error("Max retries reached")
 end
-
-
