@@ -19,7 +19,7 @@ function check_and_wait!(limiter::RateLimiterRPM)
             sleep_time = limiter.time_window - (now - limiter.request_times[1]).value / 1000
             limiter.verbose && @info "RPM Rate limit reached. Sleeping for $sleep_time seconds."
             sleep(max(0, sleep_time))
-            empty!(limiter.request_times)
+            popfirst!(limiter.request_times)
         end
         
         push!(limiter.request_times, Dates.now())
