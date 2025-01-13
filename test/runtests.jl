@@ -10,9 +10,9 @@ using Dates
 
     @testset "RPM Rate Limiter" begin
         @testset "Basic functionality" begin
-            limiter = RateLimiterRPM(max_requests=2, time_window=1.0)
+            limiter = RateLimiterRPM(max_requests=2, time_window=1.0, verbose=false)
             counter = Ref(0)
-            rate_limited_func = with_rate_limiter(limiter) do 
+            rate_limited_func = with_rate_limiter(limiter) do
                 (counter[] += 1)
             end
             
@@ -53,10 +53,10 @@ using Dates
             
             # First call with small text should be immediate
             t_start = time()
-            result = process("test")
+            result = process("test test")
             t_elapsed = time() - t_start
             @test t_elapsed < 0.1
-            @test result == 4
+            @test result == 9
             
             # Second call exceeding token limit should be rate limited
             t_start = time()
@@ -69,7 +69,8 @@ using Dates
             limiter = RateLimiterTPM(
                 max_tokens=5,  # Very small limit
                 time_window=1.0,
-                estimation_method=CharCount
+                estimation_method=CharCount,
+                verbose=false,
             )
             
             process = with_rate_limiter_tpm(limiter) do text
@@ -86,7 +87,7 @@ using Dates
     end
 
     @testset "Async functionality" begin
-        limiter = RateLimiterRPM(max_requests=2, time_window=1.0)
+        limiter = RateLimiterRPM(max_requests=2, time_window=1.0, verbose=false)
         
         process = with_rate_limiter(x -> x, limiter)
         

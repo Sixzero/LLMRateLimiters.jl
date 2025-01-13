@@ -6,6 +6,7 @@ using Base.Threads
     time_window::Float64 = 60.0
     request_times::Vector{DateTime} = DateTime[]
     lock::ReentrantLock = ReentrantLock()
+    verbose::Bool = true
 end
 
 # Split the rate limiting logic from the function call
@@ -16,7 +17,7 @@ function check_and_wait!(limiter::RateLimiterRPM)
         
         if length(limiter.request_times) >= limiter.max_requests
             sleep_time = limiter.time_window - (now - limiter.request_times[1]).value / 1000
-            @info "Rate limit reached. Sleeping for $sleep_time seconds."
+            limiter.verbose && @info "RPM Rate limit reached. Sleeping for $sleep_time seconds."
             sleep(max(0, sleep_time))
             empty!(limiter.request_times)
         end

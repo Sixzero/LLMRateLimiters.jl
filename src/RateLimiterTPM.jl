@@ -8,13 +8,14 @@ using Base.Threads
     token_usage::Vector{Tuple{DateTime, Int}} = Tuple{DateTime, Int}[]
     lock::ReentrantLock = ReentrantLock()
     estimation_method::TokenEstimationMethod = CharCountDivTwo
+    verbose::Bool = true
 end
 
 # Split rate limiting logic from function call
 function check_and_wait!(limiter::RateLimiterTPM, input::Union{AbstractString, AbstractVector{<:AbstractString}})
     tokens = estimate_tokens(input, limiter.estimation_method)
     while true
-        lock(limiter.lock) do
+        can_schedule = lock(limiter.lock) do
             now = Dates.now()
             filter!(t -> (now - t[1]).value / 1000 < limiter.time_window, limiter.token_usage)
             
@@ -23,8 +24,13 @@ function check_and_wait!(limiter::RateLimiterTPM, input::Union{AbstractString, A
                 push!(limiter.token_usage, (now, tokens))
                 return true
             end
+            limiter.verbose && @info "TPM Rate limit reached. Waiting..."
             return false
-        end || sleep(1)  # Wait if limit reached
+        end
+        if can_schedule
+            break
+        end
+        sleep(1)  # Wait if limit reached
     end
 end
 
