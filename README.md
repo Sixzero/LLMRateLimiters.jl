@@ -32,5 +32,5 @@ Pkg.add("LLMRateLimiters")
 
 ## Used by
 
-EasyContext.jl
+[EasyContext.jl](https://github.com/Sixzero/EasyContext.jl)
 and some minor projects.
