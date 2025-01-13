@@ -12,7 +12,9 @@ using Dates
         @testset "Basic functionality" begin
             limiter = RateLimiterRPM(max_requests=2, time_window=1.0)
             counter = Ref(0)
-            rate_limited_func = with_rate_limiter(() -> (counter[] += 1), limiter)
+            rate_limited_func = with_rate_limiter(limiter) do 
+                (counter[] += 1)
+            end
             
             # First two calls should be immediate
             t_start = time()
@@ -96,4 +98,4 @@ using Dates
         @test t_elapsed ≈ 1.0 rtol=0.2  # Should take ~2 seconds for 4 items with limit of 1/sec
         @test sort(results) == [1,2,3,4]
     end
-end
+end;

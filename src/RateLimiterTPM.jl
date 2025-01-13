@@ -10,33 +10,28 @@ using Base.Threads
     estimation_method::TokenEstimationMethod = CharCountDivTwo
 end
 
-function check_and_update!(limiter::RateLimiterTPM, input::Union{AbstractString, AbstractVector{<:AbstractString}})
+# Split rate limiting logic from function call
+function check_and_wait!(limiter::RateLimiterTPM, input::Union{AbstractString, AbstractVector{<:AbstractString}})
     tokens = estimate_tokens(input, limiter.estimation_method)
-    lock(limiter.lock) do
-        now = Dates.now()
-        # Remove entries older than the time window
-        filter!(t -> (now - t[1]).value / 1000 < limiter.time_window, limiter.token_usage)
-        
-        # If window is empty or total tokens (including new ones) within limit, allow it
-        total_tokens = sum(last, limiter.token_usage, init=0)
-        if isempty(limiter.token_usage) || total_tokens + tokens <= limiter.max_tokens
-            push!(limiter.token_usage, (now, tokens))
-            return true
-        end
-        
-        return false
+    while true
+        lock(limiter.lock) do
+            now = Dates.now()
+            filter!(t -> (now - t[1]).value / 1000 < limiter.time_window, limiter.token_usage)
+            
+            total_tokens = sum(last, limiter.token_usage, init=0)
+            if isempty(limiter.token_usage) || total_tokens + tokens <= limiter.max_tokens
+                push!(limiter.token_usage, (now, tokens))
+                return true
+            end
+            return false
+        end || sleep(1)  # Wait if limit reached
     end
 end
 
-function with_rate_limiter_tpm(f::Function, limiter::RateLimiterTPM)
+function with_rate_limiter_tpm(f::F, limiter::RateLimiterTPM) where {F}
     return function(input::Union{AbstractString, AbstractVector{<:AbstractString}}, args...; kwargs...)
-        while true
-            if check_and_update!(limiter, input)
-                return f(input, args...; kwargs...)
-            else
-                sleep(1)  # Wait for 1 second before trying again
-            end
-        end
+        check_and_wait!(limiter, input)
+        return f(input, args...; kwargs...)
     end
 end
 
