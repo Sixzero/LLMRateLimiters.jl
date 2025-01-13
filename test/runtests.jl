@@ -28,7 +28,6 @@ using Dates
             t_start = time()
             rate_limited_func()
             t_elapsed = time() - t_start
-            @show t_elapsed
             @test t_elapsed ≈ 1.0 rtol=0.2
             @test counter[] == 3
         end
