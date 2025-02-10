@@ -9,6 +9,9 @@
     GPT2Approximation
 end
 
+function estimate_tokens(input::Vector{PromptingTools.AbstractChatMessage}, method::TokenEstimationMethod)
+    return sum(estimate_tokens(msg.content, method) for msg in input)
+end
 function estimate_tokens(input::AbstractString, method::TokenEstimationMethod)
     if method == CharCount
         return length(input)
