@@ -8,7 +8,7 @@ makedocs(;
     authors="SixZero <havliktomi@hotmail.com> and contributors",
     sitename="LLMRateLimiters.jl",
     format=Documenter.HTML(;
-        canonical="https://sixzero.github.io/LLMRateLimiters.jl",
+        canonical="https://Sixzero.github.io/LLMRateLimiters.jl",
         edit_link="master",
         assets=String[],
     ),
