@@ -1,7 +1,7 @@
 name = "LLMRateLimiters"
 uuid = "ed1ca689-44f5-49fd-ae5c-d523230a773a"
 authors = ["SixZero <havliktomi@hotmail.com> and contributors"]
-version = "1.0.0"
+version = "1.0.1"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
