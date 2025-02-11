@@ -18,6 +18,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/sixzero/LLMRateLimiters.jl",
+    repo="github.com/Sixzero/LLMRateLimiters.jl",
     devbranch="master",
 )
