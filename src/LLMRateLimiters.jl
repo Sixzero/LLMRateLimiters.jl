@@ -4,6 +4,8 @@ using PromptingTools
 using PrecompileTools
 
 include("utils/TokenEstimationMethods.jl")
+include("backoff_strategies.jl")
+include("http429_backoff.jl")
 include("RateLimiterRPM.jl")
 include("RateLimiterHeader.jl")
 include("RateLimiterTPM.jl")
@@ -19,6 +21,12 @@ export
     with_rate_limiter_tpm,
     retry_on_rate_limit,
     airatelimited,
+    
+    # Backoff Strategies
+    BackoffStrategy,
+    NoBackoff,
+    ExponentialBackoff,
+    LinearBackoff,
     
     # Token Estimation
     TokenEstimationMethod,
