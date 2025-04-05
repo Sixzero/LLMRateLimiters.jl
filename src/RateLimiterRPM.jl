@@ -7,7 +7,7 @@ using Base.Threads
     request_times::Vector{DateTime} = DateTime[]
     lock::ReentrantLock = ReentrantLock()
     verbose::Bool = true
-    http429_backoff::Union{HTTP429Backoff, Nothing} = nothing
+    http429_backoff::Union{HTTP429Backoff, Nothing} = HTTP429Backoff()
 end
 
 # Split the rate limiting logic from the function call

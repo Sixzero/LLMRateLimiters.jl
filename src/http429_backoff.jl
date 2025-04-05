@@ -5,7 +5,7 @@ using HTTP
 HTTP429Backoff - A wrapper for backoff strategies specifically handling HTTP 429 errors
 """
 @kwdef mutable struct HTTP429Backoff
-    backoff_strategy::BackoffStrategy = NoBackoff()
+    backoff_strategy::BackoffStrategy = ExponentialBackoff()
     last_429_time::Union{DateTime, Nothing} = nothing
     recovery_time::Float64 = 300.0  # Time in seconds before resetting after no 429s
     min_request_interval::Float64 = 0.0  # Minimum time between requests after a 429
