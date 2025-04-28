@@ -1,12 +1,12 @@
 # LLMRateLimiters [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://sixzero.github.io/LLMRateLimiters.jl/dev/) [![Build Status](https://github.com/sixzero/LLMRateLimiters.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/sixzero/LLMRateLimiters.jl/actions/workflows/CI.yml?query=branch%3Amaster) [![Coverage](https://codecov.io/gh/sixzero/LLMRateLimiters.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/sixzero/LLMRateLimiters.jl) [![Aqua](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 
 Rate limiting utilities for LLM services to prevent rate limit errors and manage API quotas. Aim is to be lightweight but useful.
+Also includes token counting (needed for token-based rate limiting).
 
 ## Features
-- Request per minute (RPM) limiting `RateLimiterRPM`
-- Token per minute (TPM) limiting `RateLimiterTPM`
-- Async-safe rate limiting
-- An opinionated rate limiting for Anthropic's Claude models
+- Request per minute (RPM) limiter `RateLimiterRPM`
+- Token per minute (TPM) limiter `RateLimiterTPM`
+- Thread-safe rate limiting
 - Token count estimation methods:
     - `CharCount`, `CharCountDivTwo`, `WordCount`, `GPT2Approximation`
 - Greedy BPE tokenizer for token counting (Julia port of [fast_bpe_tokenizer](https://github.com/youkaichao/fast_bpe_tokenizer))
