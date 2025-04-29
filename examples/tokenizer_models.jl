@@ -23,7 +23,7 @@ function main()
     model_sizes = Dict{String, Int}()
     
     for model in AVAILABLE_MODELS
-        @time "$model" tokenizer = load_bpe_tokenizer(model)
+        @time "$model" tokenizer = load_bpe_tokenizer(model, true)
     end
     
     return model_sizes

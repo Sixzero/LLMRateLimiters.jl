@@ -109,7 +109,7 @@ end
 
 Load a BPE tokenizer from the specified artifact name. Thread-safe and caches results.
 """
-function load_bpe_tokenizer(name::String)
+function load_bpe_tokenizer(name::String, verbose::Bool=false)
     lock(_TOKENIZER_LOCK) do
         if haskey(_TOKENIZER_CACHE, name)
             return _TOKENIZER_CACHE[name]
@@ -122,7 +122,7 @@ function load_bpe_tokenizer(name::String)
         end
         
         path = joinpath(artifact_dir, "$name.tiktoken")
-        tokenizer = GreedyBPETokenizer(path)
+        tokenizer = verbose ? (@time "Loading tokenizer $name" GreedyBPETokenizer(path)) : GreedyBPETokenizer(path)
         _TOKENIZER_CACHE[name] = tokenizer
         return tokenizer
     end
