@@ -11,6 +11,42 @@ using Base.Threads
     verbose::Bool = true
 end
 
+"""
+    current_usage(limiter::RateLimiterTPM) -> Int
+
+Get current token usage in the sliding window.
+"""
+function current_usage(limiter::RateLimiterTPM)
+    lock(limiter.lock) do
+        now = Dates.now()
+        filter!(t -> (now - t[1]).value / 1000 < limiter.time_window, limiter.token_usage)
+        return sum(last, limiter.token_usage, init=0)
+    end
+end
+
+"""
+    can_add_tokens(limiter::RateLimiterTPM, tokens::Int) -> Bool
+
+Check if the rate limiter can handle the requested number of tokens.
+"""
+function can_add_tokens(limiter::RateLimiterTPM, tokens::Int)
+    current_tokens = current_usage(limiter)
+    return current_tokens + tokens <= limiter.max_tokens
+end
+
+"""
+    add_tokens!(limiter::RateLimiterTPM, tokens::Int)
+
+Add tokens to the rate limiter's usage tracking.
+"""
+function add_tokens!(limiter::RateLimiterTPM, tokens::Int)
+    lock(limiter.lock) do
+        now = Dates.now()
+        filter!(t -> (now - t[1]).value / 1000 < limiter.time_window, limiter.token_usage)
+        push!(limiter.token_usage, (now, tokens))
+    end
+end
+
 # Split rate limiting logic from function call
 function check_and_wait!(limiter::RateLimiterTPM, input::Union{AbstractString, AbstractVector{<:AbstractString}})
     tokens = estimate_tokens(input, limiter.estimation_method)
